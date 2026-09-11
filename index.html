@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Redirecting…</title>
+  <meta name="robots" content="noindex, nofollow">
+  <style>
+    body {font-family: system-ui, sans-serif; display:flex; align-items:center; justify-content:center; height:100vh; margin:0;}
+    .msg {color:#555;}
+  </style>
+</head>
+<body>
+  <p class="msg">Redirecting to the requested Zoom Cards page…</p>
+  <script>
+    // Extract the card id from the URL path after "/c/"
+    const path = window.location.pathname.replace(/^\/+/, ''); // remove leading slashes
+    const parts = path.split('/');
+    // Expected format: c/<id>
+    let cardId = null;
+    if (parts[0].toLowerCase() === 'c' && parts[1]) {
+      cardId = parts[1];
+    }
+    // Fallback to query string ?id= if present
+    if (!cardId) {
+      const params = new URLSearchParams(window.location.search);
+      if (params.has('id')) cardId = params.get('id');
+    }
+    // Build target URL – adjust if your card detail page has a different name/location
+    const targetBase = '/zoom-cards-palakkad/zoom-cards.html';
+    const targetUrl = cardId ? `${targetBase}?id=${encodeURIComponent(cardId)}` : targetBase;
+    // Perform the redirect after a tiny delay so the user sees the message
+    setTimeout(() => { window.location.replace(targetUrl); }, 300);
+  </script>
+</body>
+</html>
