@@ -319,7 +319,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       enquiryText += `\nPlease provide sample photos and a quotation. Thank you!`;
 
-      const waUrl = `https://wa.me/+918157936935?text=${encodeURIComponent(enquiryText)}`;
+      const waUrl = `https://wa.me/918157936935?text=${encodeURIComponent(enquiryText)}`;
       window.open(waUrl, '_blank');
       closeModal();
       enquiryForm.reset();
