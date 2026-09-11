@@ -363,5 +363,122 @@ document.addEventListener('DOMContentLoaded', () => {
       if (header) header.style.boxShadow = 'none';
     }
   }, { passive: true });
+  /* app.js – WhatsApp redirection with target number +91 815 793 6935 */
+"use strict";
+
+/* --------------------------------------------------------------------- */
+// 1️⃣  Target phone number (WhatsApp expects the number **without** plus sign
+//     or spaces – just the country code followed by the digits.
+const WHATSAPP_NUMBER = "918157936935";
+
+/* --------------------------------------------------------------------- */
+// Helper: open a URL in a new tab/window, falling back to a normal navigation
+// if the popup is blocked.
+function openWhatsApp(url) {
+  const win = window.open(url, "_blank");
+  if (!win) {
+    // Popup blocker prevented a new tab → use the current tab.
+    window.location.href = url;
+  }
+}
+
+/* --------------------------------------------------------------------- */
+// Build a WhatsApp URL.
+//   - `text` – optional pre‑filled message (plain string, will be URL‑encoded)
+//   - Returns the full `https://wa.me/<NUMBER>?text=<ENCODED>` URL.
+function makeWhatsAppUrl(text = "") {
+  const base = `https://wa.me/${WHATSAPP_NUMBER}`;
+  return text ? `${base}?text=${encodeURIComponent(text)}` : base;
+}
+
+/* --------------------------------------------------------------------- */
+// When the DOM is ready, attach listeners to all relevant elements.
+document.addEventListener("DOMContentLoaded", () => {
+  /* --------------------------------------------------------------- */
+  /* 1️⃣  “Send Estimate to WhatsApp” button (id="whatsappQuoteBtn")
+   *
+   *     Reads the current estimator UI (style, quantity, any add‑ons) and
+   *     builds a short multi‑line message that will be sent to the
+   *     target number.
+   */
+  const estimateBtn = document.getElementById("whatsappQuoteBtn");
+  if (estimateBtn) {
+    estimateBtn.addEventListener("click", (e) => {
+      e.preventDefault();
+
+      // ---- gather data from the estimator UI (adjust selectors if needed)
+      const style = document.querySelector('input[name="cardStyle"]:checked')
+        ?.value ?? "";
+      const qty = document.getElementById("quantityValue")?.textContent?.trim()
+        ?? "";
+
+      const addons = [];
+      if (document.getElementById("addonFoil")?.checked) addons.push("Metallic Foil");
+      if (document.getElementById("addonEnvelope")?.checked) addons.push("Custom Envelopes");
+      if (document.getElementById("addonBilingual")?.checked) addons.push("Bilingual Design");
+      if (document.getElementById("addonWaxSeal")?.checked) addons.push("Wax Seal");
+
+      // ---- compose the message
+      const lines = [];
+      if (style) lines.push(`Card Style: ${style}`);
+      if (qty) lines.push(`Quantity: ${qty}`);
+      if (addons.length) lines.push(`Add‑ons: ${addons.join(", ")}`);
+
+      const message = lines.join("\n");
+      openWhatsApp(makeWhatsAppUrl(message));
+    });
+  }
+
+  /* --------------------------------------------------------------- */
+  /* 2️⃣  Sticky footer WhatsApp link (class="sticky-whatsapp")
+   *
+   *     If the element is an <a> tag, we simply override its default href
+   *     so it always points at the desired number.
+   */
+  const stickyLink = document.querySelector(".sticky-whatsapp");
+  if (stickyLink) {
+    stickyLink.addEventListener("click", (e) => {
+      e.preventDefault();
+      openWhatsApp(makeWhatsAppUrl());
+    });
+  }
+
+  /* --------------------------------------------------------------- */
+  /* 3️⃣  Enquiry modal – submit button (id="enquiryForm")
+   *
+   *     Collects all user‑filled fields and sends them as a single
+   *     pre‑filled WhatsApp message.
+   */
+  const enquiryForm = document.getElementById("enquiryForm");
+  if (enquiryForm) {
+    enquiryForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+
+      const parts = [];
+
+      const name = document.getElementById("clientName")?.value.trim();
+      if (name) parts.push(`Name: ${name}`);
+
+      const phone = document.getElementById("clientPhone")?.value.trim();
+      if (phone) parts.push(`Phone/WhatsApp: ${phone}`);
+
+      const service = document.getElementById("clientService")?.value;
+      if (service) parts.push(`Service: ${service}`);
+
+      const qty = document.getElementById("clientQuantity")?.value;
+      if (qty) parts.push(`Quantity: ${qty}`);
+
+      const date = document.getElementById("clientDate")?.value;
+      if (date) parts.push(`Event/Delivery Date: ${date}`);
+
+      const notes = document.getElementById("clientNotes")?.value.trim();
+      if (notes) parts.push(`Notes: ${notes}`);
+
+      const message = parts.join("\n");
+      openWhatsApp(makeWhatsAppUrl(message));
+    });
+  }
+});
+
 
 });
